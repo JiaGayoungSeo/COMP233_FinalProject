@@ -69,7 +69,23 @@ class SQLSelectService extends Service{
             responseWriter.writeBytes("</title></head><body>" );
              */
 
+            //Loop through the resultset writing it to IE using the reponseWriter.
+            //You will have to format the Strings with a little HTML
+
+            while (rset.next ()){
+                super.getResponseWriter ().writeBytes (rset.toString ());
+            }
+
         }catch (Exception e){
+            e.printStackTrace ();
+        }finally {
+            try{
+                rset.close ();
+                pstm.close ();
+                conn.close ();
+            } catch (Exception e){
+
+            }
 
         }
     }
