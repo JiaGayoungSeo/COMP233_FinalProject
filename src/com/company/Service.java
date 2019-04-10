@@ -33,10 +33,56 @@ class SQLSelectService extends Service{
         super(responseWriter);
         this.requestString = requestString;
     }
+/*
+    public void getSQLCommand() {
+        String sqlcommand = "";
+        String s = getRequestString();
+        String criteria = s.substring(24, s.indexOf("Field"));
 
-    public void setSQLCommand(){
-        this.SQLCommand = "";
+        if (criteria.equals("&")) {
+            criteria = "'%'";
+        } else {
+            criteria = String.format("%s", criteria);
+            criteria = criteria.substring(0, criteria.indexOf("&"));
+            criteria = "'%" + criteria + "%'";
+        }
+        //When we are using s.indexOf("something") its index has to be added to number
+        //of letters in order to get index of last letter in "somehting"
+        String field = s.substring(s.indexOf("Field=") + 6, s.indexOf("&Submit"));
+        System.out.println(field);
+
+        sqlcommand = String.format("select * from employee where %s like %s", field, criteria);
+        return SQLCommand;
     }
+*/
+/*
+    public void setSQLCommand(String requestString){
+
+        String sqlcommand = "";
+        String s = requestString;
+        String criteria = s.substring(24, s.indexOf("Field"));
+
+        if (criteria.equals("&")) {
+            criteria = "'%'";
+        } else {
+            criteria = String.format("%s", criteria);
+            criteria = criteria.substring(0, criteria.indexOf("&"));
+            criteria = "'%" + criteria + "%'";
+        }
+        //When we are using s.indexOf("something") its index has to be added to number
+        //of letters in order to get index of last letter in "somehting"
+        String field = s.substring(s.indexOf("Field=") + 6, s.indexOf("&Submit"));
+        System.out.println(field);
+
+        sqlcommand = String.format("select * from employee where %s like %s", field, criteria);
+        this.SQLCommand = sqlcommand;
+    }
+*/
+    public void setSQLCommand(String requestString){
+        int startCriteria = requestString.indexOf("Criteria");
+        requestString.substring(startCriteria+6,requestString.indexOf("&Field")-1);
+    }
+
 
     @Override
     public void doWork() {
@@ -47,18 +93,27 @@ class SQLSelectService extends Service{
 
         try{
             //call setSQLCommand
-            setSQLCommand ();
+            setSQLCommand (requestString);
+            System.out.println("This is sql command"+SQLCommand);
 
             //connect to an Oracle database
             conn = DBConnection.getConnection ();
-            pstm = conn.prepareStatement (SQLCommand);
-            //executeQuery and get resultset
-            rset = pstm. executeQuery ();
 
-            //stmt = conn.createStatement ();
-            //stmt.executeQuery ( SQLCommand );
+            //pstm = conn.prepareStatement (SQLCommand);
+
+            //executeQuery and get resultset
+            //rset = pstm. executeQuery ();
+
+            SQLCommand = "Select * From employee where FirstName = 'Kelly'";
+
+            stmt = conn.createStatement ();
+            stmt.executeQuery ( SQLCommand );
             // rset = pstm.executeQuery();
-            //rset =stmt.getResultSet ();
+            rset =stmt.getResultSet ();
+
+            while(rset.next()){
+                System.out.println(rset.getString(1));
+            }
 
             //Set up the Web page
             super.getResponseWriter ().writeBytes ( "<html><head><title>test" );

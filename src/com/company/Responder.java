@@ -40,7 +40,7 @@ public class Responder implements Runnable{
                             + HTTPMessage.substring(5,HTTPMessage.indexOf("HTTP/1.1")-1);
                 }
 
-                System.out.println(HTTPMessage + "This is HTTP Message part");
+                System.out.println(HTTPMessage);
             } while(HTTPMessage.length() != 0);
         } catch (Exception e){
             System.out.println(e.toString());
@@ -50,28 +50,37 @@ public class Responder implements Runnable{
 
         try{
 
-            File file = new File(requestedFile);
+            pageWriter = new DataOutputStream(requestHandler.getOutputStream());
+            pageWriter.flush();
 
-            try{
-                pageReader = new Scanner (file);
-            }catch (FileNotFoundException fnfe){
-                file = new File(DEFAULT);
-                pageReader = new Scanner(file);
+            if(requestedFile.indexOf("doSERVICE")>-1){
+                Service s = new SQLSelectService(pageWriter,requestedFile);
+                s.doWork();
+            }else {
+                File file = new File(requestedFile);
+
+                try{
+                    pageReader = new Scanner (file);
+                }catch (FileNotFoundException fnfe){
+                    file = new File(DEFAULT);
+                    pageReader = new Scanner(file);
+                }
+
+                pageWriter = new DataOutputStream(
+                        requestHandler.getOutputStream());
+
+                while (pageReader.hasNext()){
+                    String s = pageReader.nextLine();
+                    System.out.println(s);
+                    pageWriter.writeBytes(s);
+                }
+
+                //tell the browser we're done writing to it.
+                pageReader.close();
+                pageWriter.close();
+                requestHandler.close();
             }
 
-            pageWriter = new DataOutputStream(
-                    requestHandler.getOutputStream());
-
-            while (pageReader.hasNext()){
-                String s = pageReader.nextLine();
-                System.out.println(s);
-                pageWriter.writeBytes(s);
-            }
-
-            //tell the browser we're done writing to it.
-            pageReader.close();
-            pageWriter.close();
-            requestHandler.close();
 
         } catch(Exception e){
             System.out.println(e.toString());

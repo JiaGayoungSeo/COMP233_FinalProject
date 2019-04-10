@@ -9,17 +9,17 @@ public class DBConnection {
 
     public static Connection getConnection(){
         Connection conn = null;
-        try{
-            String user = " c##gseo";
+        try {
+            String user = "CISTU030";
             String pw = "bekind";
-            String url = "jdbc:oracle:thin:@localhost:1521:orcl";
+            String url = "jdbc:oracle:thin:@bisoracle.siast.sk.ca:1521:ACAD";
 
             Class.forName("oracle.jdbc.driver.OracleDriver");
-            conn = DriverManager.getConnection(url,user,pw);
+            conn = DriverManager.getConnection(url, user, pw);
 
-            System.out.println ( "Connected!" );
+            System.out.println("Connected!");
         }catch (ClassNotFoundException cnfe) {
-            System.out.println("Failed to load DB driver" + cnfe.toString());
+            System.out.println("Failed to load DB driver " + cnfe.toString());
         }catch (SQLException sqle){
             System.out.println("Failed to connect DB" + sqle.toString());
         }catch (Exception e){
