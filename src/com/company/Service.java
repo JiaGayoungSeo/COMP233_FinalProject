@@ -1,26 +1,25 @@
 package com.company;
 
+import com.sun.org.apache.bcel.internal.generic.Select;
+
 import java.io.DataOutputStream;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 
 public abstract class Service {
 
-    private DataOutputStream responseWriter;
+    DataOutputStream responseWriter;
 
     public Service(DataOutputStream responseWriter){
         this.responseWriter = responseWriter;
     }
 
-    public DataOutputStream getResponseWriter() {
-        return responseWriter;
-    }
+    //public DataOutputStream getResponseWriter() {
+        //return responseWriter;
+   // }
 
-    public void setResponseWriter(DataOutputStream responseWriter) {
-        this.responseWriter = responseWriter;
-    }
+    //public void setResponseWriter(DataOutputStream responseWriter) {
+        //this.responseWriter = responseWriter;
+    //}
 
     public abstract void doWork();
 }
@@ -33,54 +32,23 @@ class SQLSelectService extends Service{
         super(responseWriter);
         this.requestString = requestString;
     }
-/*
-    public void getSQLCommand() {
-        String sqlcommand = "";
-        String s = getRequestString();
-        String criteria = s.substring(24, s.indexOf("Field"));
 
-        if (criteria.equals("&")) {
-            criteria = "'%'";
-        } else {
-            criteria = String.format("%s", criteria);
-            criteria = criteria.substring(0, criteria.indexOf("&"));
-            criteria = "'%" + criteria + "%'";
-        }
-        //When we are using s.indexOf("something") its index has to be added to number
-        //of letters in order to get index of last letter in "somehting"
-        String field = s.substring(s.indexOf("Field=") + 6, s.indexOf("&Submit"));
-        System.out.println(field);
-
-        sqlcommand = String.format("select * from employee where %s like %s", field, criteria);
-        return SQLCommand;
-    }
-*/
-/*
     public void setSQLCommand(String requestString){
-
-        String sqlcommand = "";
-        String s = requestString;
-        String criteria = s.substring(24, s.indexOf("Field"));
-
-        if (criteria.equals("&")) {
-            criteria = "'%'";
-        } else {
-            criteria = String.format("%s", criteria);
-            criteria = criteria.substring(0, criteria.indexOf("&"));
-            criteria = "'%" + criteria + "%'";
-        }
-        //When we are using s.indexOf("something") its index has to be added to number
-        //of letters in order to get index of last letter in "somehting"
-        String field = s.substring(s.indexOf("Field=") + 6, s.indexOf("&Submit"));
-        System.out.println(field);
-
-        sqlcommand = String.format("select * from employee where %s like %s", field, criteria);
-        this.SQLCommand = sqlcommand;
-    }
-*/
-    public void setSQLCommand(String requestString){
+        //extract criteria
         int startCriteria = requestString.indexOf("Criteria");
-        requestString.substring(startCriteria+6,requestString.indexOf("&Field")-1);
+        int lastCriteria = requestString.indexOf("&Field");
+        String criteria = requestString.substring(startCriteria+9, lastCriteria);
+
+        //extract field
+        int startField = requestString.indexOf("Field");
+        int lastField = requestString.indexOf("&Submit");
+        String field = requestString.substring(startField+6, lastField);
+
+        if(field.equals("FirstName")||field.equals("LastName")){
+            criteria ="'"+criteria+"'";
+        }
+
+        this.SQLCommand = "Select * From employee Where "+field+"="+criteria;
     }
 
 
@@ -90,11 +58,12 @@ class SQLSelectService extends Service{
         Statement stmt = null;
         PreparedStatement pstm = null; //SQL 명령어 나타내는 객체
         ResultSet rset = null; //Query를 날리면(select문을 실행하면) 리턴되는 값을 담을 객체
+        ResultSetMetaData rsmd = null;
 
         try{
             //call setSQLCommand
             setSQLCommand (requestString);
-            System.out.println("This is sql command"+SQLCommand);
+            System.out.println("This is sql command "+SQLCommand);
 
             //connect to an Oracle database
             conn = DBConnection.getConnection ();
@@ -104,20 +73,23 @@ class SQLSelectService extends Service{
             //executeQuery and get resultset
             //rset = pstm. executeQuery ();
 
-            SQLCommand = "Select * From employee where FirstName = 'Kelly'";
+            //SQLCommand = "Select * From employee where FirstName = 'Kelly'";
 
             stmt = conn.createStatement ();
             stmt.executeQuery ( SQLCommand );
-            // rset = pstm.executeQuery();
+            //rset = pstm.executeQuery();
             rset =stmt.getResultSet ();
+            rsmd = rset.getMetaData();
 
-            while(rset.next()){
-                System.out.println(rset.getString(1));
+            while(rset.next()) {
+                for(int i=0;i<rsmd.getColumnCount();i++)
+                System.out.print(rset.getString(i+1)+" ");
+                System.out.println();
             }
 
             //Set up the Web page
-            super.getResponseWriter ().writeBytes ( "<html><head><title>test" );
-            super.getResponseWriter ().writeBytes ( "</title></head><body>" );
+            responseWriter.writeBytes("<html><head><title>test page ");
+            responseWriter.writeBytes ( "</title></head><body>" );
 
             /*
             responseWriter.writeBytes("<html><head><title>test");
@@ -127,9 +99,7 @@ class SQLSelectService extends Service{
             //Loop through the resultset writing it to IE using the reponseWriter.
             //You will have to format the Strings with a little HTML
 
-            while (rset.next ()){
-                super.getResponseWriter ().writeBytes (rset.toString ());
-            }
+
 
         }catch (Exception e){
             e.printStackTrace ();

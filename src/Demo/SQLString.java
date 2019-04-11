@@ -10,8 +10,12 @@ public class SQLString {
     String str = get.substring(start+9,last);
     boolean jobcode = get.contains("FirstName");
 
+    int start2 = get.indexOf("Field");
+    int last2 = get.indexOf("&Submit");
+    String string = get.substring(start2+6,last2);
 
-    System.out.println(str+jobcode);
+
+    System.out.println(string);
 
     }
 
