@@ -22,6 +22,7 @@ public class Responder implements Runnable{
     final static String DEFAULT = "WebRoot/Util/Error404.html";
     //static FileHandler fileHandler = new FileHandler("log.log",true);
     //static Logger  logger = Logger();
+    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     public Responder(Socket requestHandler){
         this.requestHandler = requestHandler;
@@ -106,10 +107,11 @@ public class Responder implements Runnable{
     }
 
     public void logging(String string) throws IOException{
+
         BufferedWriter bw = new BufferedWriter(new FileWriter("logging.txt",true));
         PrintWriter pw = new PrintWriter(bw,true);
-        //pw.write(timeStamp+"\n");
-        pw.write(string+"\n");
+        pw.write(string);
+        pw.write(LINE_SEPARATOR);
         pw.flush();
     }
 
@@ -117,8 +119,9 @@ public class Responder implements Runnable{
         timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
         BufferedWriter bw = new BufferedWriter(new FileWriter("logging.txt",true));
         PrintWriter pw = new PrintWriter(bw,true);
-        pw.write(timeStamp+"\n");
-        pw.write(string+"\n");
+        pw.write(timeStamp);
+        pw.write(LINE_SEPARATOR);
+        pw.write(string);
         pw.flush();
     }
 
