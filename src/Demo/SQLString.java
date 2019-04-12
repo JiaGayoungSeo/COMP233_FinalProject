@@ -1,5 +1,11 @@
 package Demo;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.net.URL;
+
 public class SQLString {
 
     public static void main(String[] args){
@@ -15,9 +21,27 @@ public class SQLString {
     String string = get.substring(start2+6,last2);
 
 
+
     System.out.println(string);
 
     }
+    /*
+    public static void writeFile(String queryReseult){
+        String start = "<html>"+"<head>\n" + "</head>\n" + "<body>";
+        String end = "</body>\n" + "</html>";
+        try{
+            File file = new File ( "WebRoot\\"+queryReseult+".html" );
+            BufferedWriter bufferedWriter = new BufferedWriter ( new FileWriter( file ) );
+            bufferedWriter.write ( start );
+            bufferedWriter.write ( queryReseult );
+            bufferedWriter.write ( end );
+            bufferedWriter.flush ();
+
+        }catch (Exception e){
+
+        }
+    }
+*/
 
 
 

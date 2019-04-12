@@ -1,9 +1,9 @@
 package com.company;
 
-import com.sun.org.apache.bcel.internal.generic.Select;
 
-import java.io.DataOutputStream;
+import java.io.*;
 import java.sql.*;
+import java.util.Scanner;
 
 public abstract class Service {
 
@@ -13,13 +13,13 @@ public abstract class Service {
         this.responseWriter = responseWriter;
     }
 
-    //public DataOutputStream getResponseWriter() {
-        //return responseWriter;
-   // }
+    public DataOutputStream getResponseWriter() {
+        return responseWriter;
+    }
 
-    //public void setResponseWriter(DataOutputStream responseWriter) {
-        //this.responseWriter = responseWriter;
-    //}
+    public void setResponseWriter(DataOutputStream responseWriter) {
+        this.responseWriter = responseWriter;
+    }
 
     public abstract void doWork();
 }
@@ -59,7 +59,7 @@ class SQLSelectService extends Service{
         PreparedStatement pstm = null; //SQL 명령어 나타내는 객체
         ResultSet rset = null; //Query를 날리면(select문을 실행하면) 리턴되는 값을 담을 객체
         ResultSetMetaData rsmd = null;
-
+        String result = "";
         try{
             //call setSQLCommand
             setSQLCommand (requestString);
@@ -80,26 +80,27 @@ class SQLSelectService extends Service{
             //rset = pstm.executeQuery();
             rset =stmt.getResultSet ();
             rsmd = rset.getMetaData();
+            responseWriter.writeBytes(writePage());
 
             while(rset.next()) {
-                for(int i=0;i<rsmd.getColumnCount();i++)
-                System.out.print(rset.getString(i+1)+" ");
-                System.out.println();
+                for(int i=1;i<rsmd.getColumnCount()+1;i++){
+                    result += rset.getString(i);
+                    System.out.print(rset.getString(i));
+                    System.out.println();
+                }
             }
 
+            System.out.print(result);
             //Set up the Web page
-            responseWriter.writeBytes("<html><head><title>test page ");
-            responseWriter.writeBytes ( "</title></head><body>" );
-
-            /*
-            responseWriter.writeBytes("<html><head><title>test");
-            responseWriter.writeBytes("</title></head><body>" );
-             */
 
             //Loop through the resultset writing it to IE using the reponseWriter.
             //You will have to format the Strings with a little HTML
-
-
+            responseWriter.writeBytes(result +
+                    "</p>\n" +
+                    "</body>\n" +
+                    "\n" +
+                    "</html>");
+            responseWriter.flush();
 
         }catch (Exception e){
             e.printStackTrace ();
@@ -114,4 +115,64 @@ class SQLSelectService extends Service{
 
         }
     }
+
+
+    public String writePage(){
+       return "<html>\n" +
+               "\n" +
+               "<head>\n" +
+               "<title>Comp 233, Query</title>\n" +
+               "</head>\n" +
+               "\n" +
+               "<body>\n" +
+               "<p align='center'><font face='Arial' size='13' color=\"#0000FF\">Service Page</font></p>\n" +
+               "\n" +
+               "<p>\n" +
+               "<form action='doSERVICE' method='GET'>\n" +
+               "&nbsp;\n" +
+               "<table border=\"0\" width=\"100%\" id=\"table1\">\n" +
+               "\t<tr>\n" +
+               "\t\t<td>\n" +
+               "\t\t<p align=\"right\"><font face=\"Arial\">Search Criteria</font></td>\n" +
+               "\t\t<td>\n" +
+               "<input type='text' name='Criteria' size='15'></td>\n" +
+               "\t</tr>\n" +
+               "\t<tr>\n" +
+               "\t\t<td>\n" +
+               "\t\t<p align=\"right\"><font face=\"Arial\">First Name</font></td>\n" +
+               "\t\t<td>\n" +
+               "<input type='radio' name='Field' value='FirstName' checked></td>\n" +
+               "\t</tr>\n" +
+               "\t<tr>\n" +
+               "\t\t<td>\n" +
+               "\t\t<p align=\"right\"><font face=\"Arial\">Last Name</font></td>\n" +
+               "\t\t<td>\n" +
+               "<input type='radio' name='Field' value='LastName'></td>\n" +
+               "\t</tr>\n" +
+               "\t<tr>\n" +
+               "\t\t<td>\n" +
+               "\t\t<p align=\"right\"><font face=\"Arial\">Job Code</font></td>\n" +
+               "\t\t<td>\n" +
+               "<input type='radio' name='Field' value='JobCode'></td>\n" +
+               "\t</tr>\n" +
+               "\t<tr>\n" +
+               "\t\t<td>\n" +
+               "\t\t<p align=\"right\"><font face=\"Arial\">Employee ID</font></td>\n" +
+               "\t\t<td>\n" +
+               "<input type='radio' name='Field' value='empid'></td>\n" +
+               "\t</tr>\n" +
+               "\t<tr>\n" +
+               "\t\t<td colspan=\"2\">\n" +
+               "\t\t<p align=\"center\">\n" +
+               "<input type='Submit' name='Submit' value='Run Service'></td>\n" +
+               "\t</tr>\n" +
+               "</table>\n" +
+               "<p><br>\n" +
+               "<br>\n" +
+               "<br>\n" +
+               "<br>\n" +
+               "&nbsp; </p>\n" +
+               "</form>\n";
+    }
+
 }
