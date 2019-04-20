@@ -96,7 +96,7 @@ class SQLSelectService extends Service{
                     //query+="</table>";
                 }
                 query += "</tr>";
-                System.out.println(query);
+                //System.out.println(query);
                 responseWriter.writeBytes(query +
                         "</p>\n" +
                         "</body>\n" +
