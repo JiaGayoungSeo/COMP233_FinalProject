@@ -83,12 +83,20 @@ class SQLSelectService extends Service{
             responseWriter.writeBytes(writePage());
 
             while(rset.next()) {
-                String query= "";
-                for(int i=1;i<rsmd.getColumnCount()+1;i++){
-                    query += rset.getString(i)+" ";
-                    System.out.print(rset.getString(i));
-                    System.out.println();
+                String query= "<table>";
+                for(int i =1;i<rsmd.getColumnCount()+1;i++){
+                    query +="<th>"+rsmd.getColumnName(i)+"</th>";
                 }
+                query += "<tr>";
+                for(int i=1;i<rsmd.getColumnCount()+1;i++){
+                    //query+="<tr>";
+                    query += "<td> "+rset.getString(i)+"</td> ";
+                    //System.out.print(rset.getString(i));
+                    //System.out.println();
+                    //query+="</table>";
+                }
+                query += "</tr>";
+                System.out.println(query);
                 responseWriter.writeBytes(query +
                         "</p>\n" +
                         "</body>\n" +
