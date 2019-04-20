@@ -7,9 +7,8 @@ import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Scanner;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+
 
 public class Responder implements Runnable{
     private Socket requestHandler;
@@ -20,46 +19,42 @@ public class Responder implements Runnable{
     private String requestedURL;
     private String requestedFile;
     final static String DEFAULT = "WebRoot/Util/Error404.html";
-    //static FileHandler fileHandler = new FileHandler("log.log",true);
-    //static Logger  logger = Logger();
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    private WebServer ws;
 
-    public Responder(Socket requestHandler){
+
+    public Responder(Socket requestHandler, WebServer ws ){
         this.requestHandler = requestHandler;
+        this.setWs(ws);
     }
 
 
 
     @Override
     public void run() {
-
         try{
 
             requestReader = new Scanner(
                     new InputStreamReader (requestHandler.getInputStream()));
 
-            Logging logging;
             int lineCount = 0;
             String time = "";
             do{
                 lineCount++; //This will be used later
                 //HTTP 요청 헤더: 웹브라우저가 HTTP프로토콜을 이용해 요청 정보를 웹서버로 전송할때 부가적인 정보를 담아 전송
-                HTTPMessage = requestReader.nextLine();//request
-
+                setHTTPMessage(requestReader.nextLine());//request
 
                 if (lineCount ==1){
                     requestedFile = "WebRoot\\"
-                            + HTTPMessage.substring(5,HTTPMessage.indexOf("HTTP/1.1")-1);
-                    logging(time,HTTPMessage);
+                            + getHTTPMessage().substring(5, getHTTPMessage().indexOf("HTTP/1.1")-1);
+                    logging(time, getHTTPMessage());
                 }
                 else{
-                    logging(HTTPMessage);
+                    logging(getHTTPMessage());
                 }
+                System.out.println(getHTTPMessage());
 
-                System.out.println(HTTPMessage );
-
-
-            } while(HTTPMessage.length() != 0);
+            } while(getHTTPMessage().length() != 0);
         } catch (Exception e){
             System.out.println(e.toString());
             System.out.println("\n");
@@ -74,8 +69,6 @@ public class Responder implements Runnable{
             if(requestedFile.indexOf("doSERVICE")>-1){
                 Service s = new SQLSelectService(pageWriter,requestedFile);
                 s.doWork();
-
-
             }else {
                 File file = new File(requestedFile);
 
@@ -83,7 +76,8 @@ public class Responder implements Runnable{
                     pageReader = new Scanner (file);
                 }catch (FileNotFoundException fnfe){
                     file = new File(DEFAULT);
-                    //logger.log(Level.INFO,"error 404 page not found ");
+                    logging("404Error - File Not Found Error");
+                    logging("");
                     pageReader = new Scanner(file);
                 }
 
@@ -113,7 +107,10 @@ public class Responder implements Runnable{
         pw.write(string);
         pw.write(LINE_SEPARATOR);
         pw.flush();
+        getWs().writeToArea(string+"\n");
+
     }
+
 
     public void logging(String timeStamp, String string) throws  IOException{
         timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
@@ -123,9 +120,23 @@ public class Responder implements Runnable{
         pw.write(LINE_SEPARATOR);
         pw.write(string);
         pw.flush();
+        getWs().writeToArea(timeStamp+"\n"+string+"\n");
     }
 
 
+    public String getHTTPMessage() {
+        return HTTPMessage;
+    }
 
+    public void setHTTPMessage(String HTTPMessage) {
+        this.HTTPMessage = HTTPMessage;
+    }
 
+    public WebServer getWs() {
+        return ws;
+    }
+
+    public void setWs(WebServer ws) {
+        this.ws = ws;
+    }
 }

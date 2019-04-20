@@ -2,6 +2,9 @@ package com.company;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -9,12 +12,13 @@ import java.util.concurrent.Executors;
 public class WebServer extends JFrame {
     private ServerSocket requestListener;
 
-    private JTextArea textArea;
+    private static JTextArea textArea;
     private JButton start;
     private JButton stop;
-    private static int HTTP_PORT;
     private ExecutorService responses;
-    private FlowLayout flowLayout;
+    private Scrollbar scrollbar;
+    private JScrollPane txtScroll;
+
 
     public WebServer(){
         super("Server");
@@ -36,53 +40,58 @@ public class WebServer extends JFrame {
         textArea = new JTextArea();
         start = new JButton("Start");
         stop = new JButton("Stop");
-        add(textArea, BorderLayout.CENTER);
+
+
+        txtScroll = new JScrollPane(textArea);
+        txtScroll.setSize(500,500);
+        txtScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        // txtScroll.add(textArea);
+        add(txtScroll, BorderLayout.CENTER);
+
+        /*
+        scrollbar = new Scrollbar(Scrollbar.VERTICAL,50,20,0,50);
+        add(scrollbar,layout.CENTER);
+        scrollbar.setSize(15,100);
+        scrollbar.setLocation(30,30);
+        textArea.add(scrollbar);
+        textArea.setVisible(true);
+        */
+
+
 
 
         //set background color
-
         textArea.setBackground(new Color(249,231,159));
 
         //set font
         textArea.setFont(font);
-
+        //textArea.add(txtScroll);
 
         Panel buttonContainer = new Panel();
         buttonContainer.add(start);
         buttonContainer.add(stop);
 
-        //chatInputContainer.add(chatInput);
-        //chatInputContainer.add(chatSend);
+        add(buttonContainer,BorderLayout.SOUTH);
 
-        add( buttonContainer,BorderLayout.SOUTH);
-/*
-        chatSend.addActionListener(
+        start.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                getConnection();
+            }
+        });
 
-                new ActionListener(){
-
-                    public void actionPerformed( ActionEvent ae){
-                        sendData(chatInput);
-                    }
-
-                    private void sendData(JTextArea out){
-
-                        try{
-                            output.writeObject(out.getText());
-                            out.setText("");
-                        }
-                        catch( Exception e){
-                            System.out.println("Oops! : "+e.toString() );
-                        }
-                    }
-                }
-        );
-*/
+        stop.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                getDisconnect();
+            }
+        });
     }
 
     public void start(){
         while(true){
             try{
-                Responder r = new Responder(requestListener.accept());
+                Responder r = new Responder(requestListener.accept(), this);
                 r.run();
             }catch (Exception e){
 
@@ -111,14 +120,25 @@ public class WebServer extends JFrame {
         }catch (Exception e){
 
         }
+    }
 
+    public void getDisconnect(){
+        try{
+            System.out.println("Connection is lost");
+            requestListener.close();
+        }catch (Exception e){
+
+        }
     }
 
 
+    public void writeToArea(String s){
+        textArea.append(s);
+        txtScroll.getVerticalScrollBar().setValue(txtScroll.getVerticalScrollBar().getMaximum());
+    }
 
-    public static void main(String[] args){
+    public static void main(String[] args) throws Exception {
         WebServer myServer = new WebServer();
-        myServer.getConnection();
         myServer.start();
     }
 
